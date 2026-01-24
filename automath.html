@@ -196,10 +196,14 @@
 
         .results {
             margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
         }
 
         .result-item {
-            margin: 30px 0;
+            margin: 0;
         }
 
         .result-value {
@@ -271,10 +275,6 @@
 
         .review-table .feedback-icon {
             font-size: 20px;
-        }
-
-        .review-table .feedback-icon.correct {
-            color: #22c55e;
         }
 
         .review-table .feedback-icon.incorrect {
@@ -353,7 +353,6 @@
                             <th class="problem-col">Problem</th>
                             <th>Your Answer</th>
                             <th>Correct Answer</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="reviewTableBody">
@@ -698,18 +697,11 @@
                 // Correct Answer column
                 const correctCell = document.createElement('td');
                 if (item.isCorrect) {
-                    correctCell.innerHTML = '<span class="feedback-icon correct">✓</span>';
+                    correctCell.innerHTML = '<span class="feedback-icon">✓</span>';
                 } else {
                     correctCell.textContent = item.correctAnswer;
                 }
                 row.appendChild(correctCell);
-
-                // Feedback column (unlabeled, shows X for incorrect only)
-                const feedbackCell = document.createElement('td');
-                if (!item.isCorrect) {
-                    feedbackCell.innerHTML = '<span class="feedback-icon incorrect">✗</span>';
-                }
-                row.appendChild(feedbackCell);
 
                 reviewTableBody.appendChild(row);
             });
