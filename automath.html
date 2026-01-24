@@ -100,6 +100,15 @@
             color: #ffffff;
         }
 
+        #restartBtn {
+            background: #2563eb;
+        }
+
+        #restartBtn:hover {
+            background: #1d4ed8;
+            opacity: 1;
+        }
+
         .problem-container {
             display: flex;
             flex-direction: column;
@@ -220,9 +229,8 @@
         }
 
         .review-section {
-            margin-top: 50px;
-            border-top: 1px solid #ddd;
-            padding-top: 30px;
+            margin-top: 40px;
+            padding-top: 0;
         }
 
         .review-title {
@@ -240,6 +248,7 @@
             margin: 0 auto;
             border-collapse: collapse;
             font-size: 24px;
+            color: #333333;
         }
 
         .review-table th {
@@ -346,7 +355,7 @@
                 </div>
             </div>
 
-            <button id="restartBtn" style="margin-top: 40px; margin-bottom: 30px;">Practice Again</button>
+            <button id="restartBtn" style="margin-top: 40px; margin-bottom: 0;">Practice Again</button>
 
             <div class="review-section">
                 <div class="review-title">Review Your Work</div>
@@ -701,7 +710,7 @@
                     correctCell.innerHTML = '<span class="feedback-icon">✓</span>';
                 } else {
                     correctCell.textContent = item.correctAnswer;
-                    correctCell.style.color = '#000000';
+                    correctCell.style.color = '#333333';
                 }
                 row.appendChild(correctCell);
 
