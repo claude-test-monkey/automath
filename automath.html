@@ -256,11 +256,12 @@
         }
 
         .review-table tr.correct {
-            background-color: #e8f5e9;
+            background-color: #ffffff;
         }
 
         .review-table tr.incorrect {
             background-color: #ffebee;
+            color: #ef4444;
         }
 
         .review-table .problem-col {
@@ -352,6 +353,7 @@
                             <th class="problem-col">Problem</th>
                             <th>Your Answer</th>
                             <th>Correct Answer</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="reviewTableBody">
@@ -690,15 +692,24 @@
 
                 // Your Answer column
                 const answerCell = document.createElement('td');
-                const feedbackIcon = item.isCorrect ? '✓' : '✗';
-                const feedbackClass = item.isCorrect ? 'correct' : 'incorrect';
-                answerCell.innerHTML = `${item.userAnswer} <span class="feedback-icon ${feedbackClass}">${feedbackIcon}</span>`;
+                answerCell.textContent = item.userAnswer;
                 row.appendChild(answerCell);
 
                 // Correct Answer column
                 const correctCell = document.createElement('td');
-                correctCell.textContent = item.isCorrect ? '—' : item.correctAnswer;
+                if (item.isCorrect) {
+                    correctCell.innerHTML = '<span class="feedback-icon correct">✓</span>';
+                } else {
+                    correctCell.textContent = item.correctAnswer;
+                }
                 row.appendChild(correctCell);
+
+                // Feedback column (unlabeled, shows X for incorrect only)
+                const feedbackCell = document.createElement('td');
+                if (!item.isCorrect) {
+                    feedbackCell.innerHTML = '<span class="feedback-icon incorrect">✗</span>';
+                }
+                row.appendChild(feedbackCell);
 
                 reviewTableBody.appendChild(row);
             });
