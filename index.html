@@ -215,6 +215,71 @@
             color: #666;
         }
 
+        .review-section {
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 30px;
+        }
+
+        .review-title {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+        }
+
+        .review-table {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            font-size: 24px;
+        }
+
+        .review-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            font-weight: 400;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .review-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .review-table tr.correct {
+            background-color: #e8f5e9;
+        }
+
+        .review-table tr.incorrect {
+            background-color: #ffebee;
+        }
+
+        .review-table .problem-col {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .review-table .feedback-icon {
+            font-size: 20px;
+        }
+
+        .review-table .feedback-icon.correct {
+            color: #22c55e;
+        }
+
+        .review-table .feedback-icon.incorrect {
+            color: #ef4444;
+        }
+
         .hidden {
             display: none;
         }
@@ -279,6 +344,22 @@
                 </div>
             </div>
 
+            <div class="review-section">
+                <div class="review-title">Review Your Work</div>
+                <table class="review-table" id="reviewTable">
+                    <thead>
+                        <tr>
+                            <th class="problem-col">Problem</th>
+                            <th>Your Answer</th>
+                            <th>Correct Answer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reviewTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
             <button id="restartBtn" style="margin-top: 50px;">Practice Again</button>
         </div>
     </div>
@@ -299,6 +380,7 @@
         let consecutiveTrivialCount = 0; // Consecutive trivial problems
         let totalTrivialCount = 0; // Total trivial problems in session
         let recentOperands = []; // Track last 2 operands used
+        let sessionHistory = []; // Track all problems and answers for review
 
         // Elements
         const startScreen = document.getElementById('startScreen');
@@ -453,6 +535,7 @@
             consecutiveTrivialCount = 0;
             totalTrivialCount = 0;
             recentOperands = [];
+            sessionHistory = [];
 
             startScreen.classList.remove('active');
             practiceScreen.classList.add('active');
@@ -529,7 +612,19 @@
 
             if (isNaN(userAnswer)) return;
 
-            if (userAnswer === currentProblemData.answer) {
+            const isCorrect = userAnswer === currentProblemData.answer;
+
+            // Save to session history for review
+            sessionHistory.push({
+                num1: currentProblemData.num1,
+                num2: currentProblemData.num2,
+                operator: currentProblemData.operator,
+                correctAnswer: currentProblemData.answer,
+                userAnswer: userAnswer,
+                isCorrect: isCorrect
+            });
+
+            if (isCorrect) {
                 // Show green checkmark in input box
                 answerInput.value = '';
                 answerInput.placeholder = '✓';
@@ -578,6 +673,35 @@
             document.getElementById('scoreResult').textContent = `${correctAnswers}/${totalProblems}`;
             document.getElementById('accuracyResult').textContent = `${accuracy}%`;
             document.getElementById('timeResult').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // Populate review table
+            const reviewTableBody = document.getElementById('reviewTableBody');
+            reviewTableBody.innerHTML = '';
+
+            sessionHistory.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = item.isCorrect ? 'correct' : 'incorrect';
+
+                // Problem column
+                const problemCell = document.createElement('td');
+                problemCell.className = 'problem-col';
+                problemCell.textContent = `${item.num1} ${item.operator} ${item.num2} =`;
+                row.appendChild(problemCell);
+
+                // Your Answer column
+                const answerCell = document.createElement('td');
+                const feedbackIcon = item.isCorrect ? '✓' : '✗';
+                const feedbackClass = item.isCorrect ? 'correct' : 'incorrect';
+                answerCell.innerHTML = `${item.userAnswer} <span class="feedback-icon ${feedbackClass}">${feedbackIcon}</span>`;
+                row.appendChild(answerCell);
+
+                // Correct Answer column
+                const correctCell = document.createElement('td');
+                correctCell.textContent = item.isCorrect ? '—' : item.correctAnswer;
+                row.appendChild(correctCell);
+
+                reviewTableBody.appendChild(row);
+            });
         }
 
         function resetApp() {
@@ -593,6 +717,7 @@
             consecutiveTrivialCount = 0;
             totalTrivialCount = 0;
             recentOperands = [];
+            sessionHistory = [];
         }
     </script>
 </body>
