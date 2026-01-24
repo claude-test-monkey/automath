@@ -103,23 +103,27 @@
         .problem {
             font-size: 72px;
             font-weight: 300;
-            margin: 60px 0;
-            min-height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: inline-block;
+            margin-right: 20px;
         }
 
         .input-container {
-            margin: 40px 0;
+            display: inline-block;
+        }
+
+        .problem-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 60px 0 40px 0;
         }
 
         input[type="number"] {
-            font-size: 48px;
-            padding: 20px;
+            font-size: 72px;
+            padding: 15px 25px;
             border: 3px solid #000000;
             border-radius: 4px;
-            width: 300px;
+            width: 180px;
             text-align: center;
             font-family: inherit;
             transition: border-color 0.2s;
@@ -133,15 +137,17 @@
         input[type="number"].correct {
             border-color: #22c55e;
             color: #22c55e;
+            caret-color: transparent;
         }
 
         input[type="number"].incorrect {
             border-color: #ef4444;
             color: #ef4444;
+            caret-color: transparent;
         }
 
         input[type="number"]::placeholder {
-            font-size: 64px;
+            font-size: 72px;
             color: #cccccc;
         }
 
@@ -207,10 +213,11 @@
 
         <!-- Practice Screen -->
         <div id="practiceScreen" class="screen">
-            <div class="problem" id="problem"></div>
-
-            <div class="input-container">
-                <input type="number" id="answer" placeholder="?" autocomplete="off">
+            <div class="problem-container">
+                <div class="problem" id="problem"></div>
+                <div class="input-container">
+                    <input type="number" id="answer" placeholder="?" autocomplete="off">
+                </div>
             </div>
 
             <div class="progress" id="progress">Problem 1 of 15</div>
