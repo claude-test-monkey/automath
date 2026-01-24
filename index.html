@@ -201,14 +201,6 @@
                     </div>
                 </div>
 
-                <div class="option-group">
-                    <label>Difficulty</label>
-                    <div class="button-group">
-                        <button class="secondary difficulty-btn" data-difficulty="easy">Easy</button>
-                        <button class="secondary difficulty-btn" data-difficulty="medium">Medium</button>
-                        <button class="secondary difficulty-btn" data-difficulty="hard">Hard</button>
-                    </div>
-                </div>
             </div>
 
             <button id="startBtn" class="hidden">Start Practice</button>
@@ -256,13 +248,13 @@
     <script>
         // State
         let selectedOperation = null;
-        let selectedDifficulty = null;
         let currentProblem = 0;
         let totalProblems = 10;
         let correctAnswers = 0;
         let startTime = null;
         let timerInterval = null;
-        let problems = [];
+        let currentDifficulty = 1; // Start at easiest level (1-5)
+        let currentProblemData = null;
 
         // Elements
         const startScreen = document.getElementById('startScreen');
@@ -286,18 +278,8 @@
             });
         });
 
-        // Difficulty buttons
-        document.querySelectorAll('.difficulty-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                selectedDifficulty = btn.dataset.difficulty;
-                checkStartReady();
-            });
-        });
-
         function checkStartReady() {
-            if (selectedOperation && selectedDifficulty) {
+            if (selectedOperation) {
                 startBtn.classList.remove('hidden');
             }
         }
@@ -305,51 +287,107 @@
         startBtn.addEventListener('click', startPractice);
         restartBtn.addEventListener('click', resetApp);
 
-        function generateProblem(operation, difficulty) {
+        function generateProblem(operation, difficultyLevel) {
             let num1, num2, answer;
-
-            const ranges = {
-                easy: { min: 1, max: 10 },
-                medium: { min: 1, max: 50 },
-                hard: { min: 1, max: 100 }
-            };
-
-            const range = ranges[difficulty];
 
             switch(operation) {
                 case 'addition':
-                    num1 = Math.floor(Math.random() * range.max) + range.min;
-                    num2 = Math.floor(Math.random() * range.max) + range.min;
+                    if (difficultyLevel === 1) {
+                        // Facts within 5
+                        num1 = Math.floor(Math.random() * 5) + 1;
+                        num2 = Math.floor(Math.random() * (5 - num1)) + 1;
+                    } else if (difficultyLevel === 2) {
+                        // Facts within 10
+                        num1 = Math.floor(Math.random() * 9) + 1;
+                        num2 = Math.floor(Math.random() * (10 - num1)) + 1;
+                    } else if (difficultyLevel === 3) {
+                        // Facts within 20
+                        num1 = Math.floor(Math.random() * 15) + 5;
+                        num2 = Math.floor(Math.random() * 10) + 1;
+                    } else if (difficultyLevel === 4) {
+                        // Two-digit within 50
+                        num1 = Math.floor(Math.random() * 30) + 10;
+                        num2 = Math.floor(Math.random() * 20) + 5;
+                    } else {
+                        // Two-digit within 100
+                        num1 = Math.floor(Math.random() * 50) + 20;
+                        num2 = Math.floor(Math.random() * 40) + 10;
+                    }
                     answer = num1 + num2;
                     return { num1, num2, operator: '+', answer };
 
                 case 'subtraction':
-                    num1 = Math.floor(Math.random() * range.max) + range.min;
-                    num2 = Math.floor(Math.random() * num1) + 1;
+                    if (difficultyLevel === 1) {
+                        // Facts within 5
+                        num1 = Math.floor(Math.random() * 4) + 2;
+                        num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
+                    } else if (difficultyLevel === 2) {
+                        // Facts within 10
+                        num1 = Math.floor(Math.random() * 8) + 3;
+                        num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
+                    } else if (difficultyLevel === 3) {
+                        // Facts within 20
+                        num1 = Math.floor(Math.random() * 15) + 6;
+                        num2 = Math.floor(Math.random() * 10) + 1;
+                    } else if (difficultyLevel === 4) {
+                        // Two-digit within 50
+                        num1 = Math.floor(Math.random() * 30) + 15;
+                        num2 = Math.floor(Math.random() * 20) + 5;
+                    } else {
+                        // Two-digit within 100
+                        num1 = Math.floor(Math.random() * 60) + 30;
+                        num2 = Math.floor(Math.random() * 40) + 10;
+                    }
                     answer = num1 - num2;
                     return { num1, num2, operator: '−', answer };
 
                 case 'multiplication':
-                    const multRanges = {
-                        easy: { min: 1, max: 10 },
-                        medium: { min: 1, max: 12 },
-                        hard: { min: 1, max: 20 }
-                    };
-                    const multRange = multRanges[difficulty];
-                    num1 = Math.floor(Math.random() * multRange.max) + multRange.min;
-                    num2 = Math.floor(Math.random() * multRange.max) + multRange.min;
+                    if (difficultyLevel === 1) {
+                        // 0-2 times tables
+                        num1 = Math.floor(Math.random() * 10) + 1;
+                        num2 = Math.floor(Math.random() * 3);
+                    } else if (difficultyLevel === 2) {
+                        // 0-5 times tables
+                        num1 = Math.floor(Math.random() * 10) + 1;
+                        num2 = Math.floor(Math.random() * 6);
+                    } else if (difficultyLevel === 3) {
+                        // 0-10 times tables
+                        num1 = Math.floor(Math.random() * 10) + 1;
+                        num2 = Math.floor(Math.random() * 11);
+                    } else if (difficultyLevel === 4) {
+                        // 0-12 times tables
+                        num1 = Math.floor(Math.random() * 12) + 1;
+                        num2 = Math.floor(Math.random() * 13);
+                    } else {
+                        // 0-15 times tables
+                        num1 = Math.floor(Math.random() * 15) + 1;
+                        num2 = Math.floor(Math.random() * 16);
+                    }
                     answer = num1 * num2;
                     return { num1, num2, operator: '×', answer };
 
                 case 'division':
-                    const divRanges = {
-                        easy: { min: 1, max: 10 },
-                        medium: { min: 1, max: 12 },
-                        hard: { min: 1, max: 15 }
-                    };
-                    const divRange = divRanges[difficulty];
-                    num2 = Math.floor(Math.random() * divRange.max) + divRange.min;
-                    answer = Math.floor(Math.random() * divRange.max) + divRange.min;
+                    if (difficultyLevel === 1) {
+                        // 0-2 times tables division
+                        num2 = Math.floor(Math.random() * 2) + 1;
+                        answer = Math.floor(Math.random() * 10) + 1;
+                    } else if (difficultyLevel === 2) {
+                        // 0-5 times tables division
+                        num2 = Math.floor(Math.random() * 5) + 1;
+                        answer = Math.floor(Math.random() * 10) + 1;
+                    } else if (difficultyLevel === 3) {
+                        // 0-10 times tables division
+                        num2 = Math.floor(Math.random() * 9) + 2;
+                        answer = Math.floor(Math.random() * 12) + 1;
+                    } else if (difficultyLevel === 4) {
+                        // 0-12 times tables division
+                        num2 = Math.floor(Math.random() * 11) + 2;
+                        answer = Math.floor(Math.random() * 12) + 1;
+                    } else {
+                        // 0-15 times tables division
+                        num2 = Math.floor(Math.random() * 14) + 2;
+                        answer = Math.floor(Math.random() * 15) + 1;
+                    }
                     num1 = num2 * answer;
                     return { num1, num2, operator: '÷', answer };
             }
@@ -358,19 +396,14 @@
         function startPractice() {
             currentProblem = 0;
             correctAnswers = 0;
-            problems = [];
-
-            // Generate all problems
-            for (let i = 0; i < totalProblems; i++) {
-                problems.push(generateProblem(selectedOperation, selectedDifficulty));
-            }
+            currentDifficulty = 1; // Start at easiest level
 
             startScreen.classList.remove('active');
             practiceScreen.classList.add('active');
 
             startTime = Date.now();
             startTimer();
-            showProblem();
+            showNextProblem();
         }
 
         function startTimer() {
@@ -382,9 +415,9 @@
             }, 1000);
         }
 
-        function showProblem() {
-            const problem = problems[currentProblem];
-            problemEl.textContent = `${problem.num1} ${problem.operator} ${problem.num2} =`;
+        function showNextProblem() {
+            currentProblemData = generateProblem(selectedOperation, currentDifficulty);
+            problemEl.textContent = `${currentProblemData.num1} ${currentProblemData.operator} ${currentProblemData.num2} =`;
             answerInput.value = '';
             answerInput.focus();
             feedbackEl.textContent = '';
@@ -399,25 +432,32 @@
 
         function checkAnswer() {
             const userAnswer = parseInt(answerInput.value);
-            const problem = problems[currentProblem];
 
             if (isNaN(userAnswer)) return;
 
-            if (userAnswer === problem.answer) {
+            if (userAnswer === currentProblemData.answer) {
                 feedbackEl.innerHTML = '<span class="checkmark">✓</span>';
                 correctAnswers++;
+                // Increase difficulty (max 5)
+                if (currentDifficulty < 5) {
+                    currentDifficulty++;
+                }
             } else {
                 feedbackEl.innerHTML = '<span class="xmark">✗</span>';
+                // Decrease difficulty (min 1)
+                if (currentDifficulty > 1) {
+                    currentDifficulty--;
+                }
             }
 
             setTimeout(() => {
                 currentProblem++;
                 if (currentProblem < totalProblems) {
-                    showProblem();
+                    showNextProblem();
                 } else {
                     showResults();
                 }
-            }, 800);
+            }, 400);
         }
 
         function showResults() {
@@ -441,10 +481,9 @@
             startScreen.classList.add('active');
 
             selectedOperation = null;
-            selectedDifficulty = null;
+            currentDifficulty = 1;
 
             document.querySelectorAll('.operation-btn').forEach(b => b.classList.remove('selected'));
-            document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
             startBtn.classList.add('hidden');
 
             timerEl.textContent = '0:00';
