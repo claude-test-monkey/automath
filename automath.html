@@ -202,13 +202,10 @@
                 </div>
 
             </div>
-
-            <button id="startBtn" class="hidden">Start Practice</button>
         </div>
 
         <!-- Practice Screen -->
         <div id="practiceScreen" class="screen">
-            <div class="timer" id="timer">0:00</div>
             <div class="progress" id="progress">Problem 1 of 10</div>
 
             <div class="problem" id="problem"></div>
@@ -252,39 +249,28 @@
         let totalProblems = 10;
         let correctAnswers = 0;
         let startTime = null;
-        let timerInterval = null;
         let currentDifficulty = 1; // Start at easiest level (1-5)
         let currentProblemData = null;
+        let correctStreak = 0; // Track consecutive correct answers
 
         // Elements
         const startScreen = document.getElementById('startScreen');
         const practiceScreen = document.getElementById('practiceScreen');
         const resultsScreen = document.getElementById('resultsScreen');
-        const startBtn = document.getElementById('startBtn');
         const restartBtn = document.getElementById('restartBtn');
         const problemEl = document.getElementById('problem');
         const answerInput = document.getElementById('answer');
         const feedbackEl = document.getElementById('feedback');
-        const timerEl = document.getElementById('timer');
         const progressEl = document.getElementById('progress');
 
-        // Operation buttons
+        // Operation buttons - start practice immediately when clicked
         document.querySelectorAll('.operation-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.operation-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
                 selectedOperation = btn.dataset.operation;
-                checkStartReady();
+                startPractice();
             });
         });
 
-        function checkStartReady() {
-            if (selectedOperation) {
-                startBtn.classList.remove('hidden');
-            }
-        }
-
-        startBtn.addEventListener('click', startPractice);
         restartBtn.addEventListener('click', resetApp);
 
         function generateProblem(operation, difficultyLevel) {
@@ -397,22 +383,13 @@
             currentProblem = 0;
             correctAnswers = 0;
             currentDifficulty = 1; // Start at easiest level
+            correctStreak = 0;
 
             startScreen.classList.remove('active');
             practiceScreen.classList.add('active');
 
             startTime = Date.now();
-            startTimer();
             showNextProblem();
-        }
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
         }
 
         function showNextProblem() {
@@ -438,13 +415,18 @@
             if (userAnswer === currentProblemData.answer) {
                 feedbackEl.innerHTML = '<span class="checkmark">✓</span>';
                 correctAnswers++;
-                // Increase difficulty (max 5)
-                if (currentDifficulty < 5) {
+                correctStreak++;
+
+                // Increase difficulty only after 3 consecutive correct answers (max 5)
+                if (correctStreak >= 3 && currentDifficulty < 5) {
                     currentDifficulty++;
+                    correctStreak = 0; // Reset streak after difficulty increase
                 }
             } else {
                 feedbackEl.innerHTML = '<span class="xmark">✗</span>';
-                // Decrease difficulty (min 1)
+                correctStreak = 0; // Reset streak on wrong answer
+
+                // Decrease difficulty immediately on wrong answer (min 1)
                 if (currentDifficulty > 1) {
                     currentDifficulty--;
                 }
@@ -461,7 +443,6 @@
         }
 
         function showResults() {
-            clearInterval(timerInterval);
             practiceScreen.classList.remove('active');
             resultsScreen.classList.add('active');
 
@@ -482,11 +463,7 @@
 
             selectedOperation = null;
             currentDifficulty = 1;
-
-            document.querySelectorAll('.operation-btn').forEach(b => b.classList.remove('selected'));
-            startBtn.classList.add('hidden');
-
-            timerEl.textContent = '0:00';
+            correctStreak = 0;
         }
     </script>
 </body>
