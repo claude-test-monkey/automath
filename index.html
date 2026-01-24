@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automath - Math Practice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 300;
+            margin-bottom: 60px;
+            letter-spacing: -1px;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 300;
+            margin-bottom: 40px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .options {
+            margin-bottom: 50px;
+        }
+
+        .option-group {
+            margin-bottom: 40px;
+        }
+
+        .option-group label {
+            display: block;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        button.secondary {
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
+        }
+
+        button.selected {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .problem {
+            font-size: 72px;
+            font-weight: 300;
+            margin: 60px 0;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-container {
+            margin: 40px 0;
+        }
+
+        input[type="number"] {
+            font-size: 48px;
+            padding: 20px;
+            border: 2px solid #000000;
+            border-radius: 4px;
+            width: 300px;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #000000;
+        }
+
+        .feedback {
+            font-size: 64px;
+            margin: 20px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkmark {
+            color: #22c55e;
+        }
+
+        .xmark {
+            color: #ef4444;
+        }
+
+        .timer {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .progress {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .results {
+            margin-top: 40px;
+        }
+
+        .result-item {
+            margin: 30px 0;
+        }
+
+        .result-value {
+            font-size: 56px;
+            font-weight: 300;
+            margin-top: 10px;
+        }
+
+        .result-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div id="startScreen" class="screen active">
+            <h1>Automath</h1>
+
+            <div class="options">
+                <div class="option-group">
+                    <label>Operation</label>
+                    <div class="button-group">
+                        <button class="secondary operation-btn" data-operation="addition">Addition</button>
+                        <button class="secondary operation-btn" data-operation="subtraction">Subtraction</button>
+                        <button class="secondary operation-btn" data-operation="multiplication">Multiplication</button>
+                        <button class="secondary operation-btn" data-operation="division">Division</button>
+                    </div>
+                </div>
+
+                <div class="option-group">
+                    <label>Difficulty</label>
+                    <div class="button-group">
+                        <button class="secondary difficulty-btn" data-difficulty="easy">Easy</button>
+                        <button class="secondary difficulty-btn" data-difficulty="medium">Medium</button>
+                        <button class="secondary difficulty-btn" data-difficulty="hard">Hard</button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="startBtn" class="hidden">Start Practice</button>
+        </div>
+
+        <!-- Practice Screen -->
+        <div id="practiceScreen" class="screen">
+            <div class="timer" id="timer">0:00</div>
+            <div class="progress" id="progress">Problem 1 of 10</div>
+
+            <div class="problem" id="problem"></div>
+
+            <div class="input-container">
+                <input type="number" id="answer" placeholder="?" autocomplete="off">
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="screen">
+            <h2>Practice Complete</h2>
+
+            <div class="results">
+                <div class="result-item">
+                    <div class="result-label">Score</div>
+                    <div class="result-value" id="scoreResult">0/10</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">Accuracy</div>
+                    <div class="result-value" id="accuracyResult">0%</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">Time</div>
+                    <div class="result-value" id="timeResult">0:00</div>
+                </div>
+            </div>
+
+            <button id="restartBtn" style="margin-top: 50px;">Practice Again</button>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let selectedOperation = null;
+        let selectedDifficulty = null;
+        let currentProblem = 0;
+        let totalProblems = 10;
+        let correctAnswers = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let problems = [];
+
+        // Elements
+        const startScreen = document.getElementById('startScreen');
+        const practiceScreen = document.getElementById('practiceScreen');
+        const resultsScreen = document.getElementById('resultsScreen');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const problemEl = document.getElementById('problem');
+        const answerInput = document.getElementById('answer');
+        const feedbackEl = document.getElementById('feedback');
+        const timerEl = document.getElementById('timer');
+        const progressEl = document.getElementById('progress');
+
+        // Operation buttons
+        document.querySelectorAll('.operation-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.operation-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedOperation = btn.dataset.operation;
+                checkStartReady();
+            });
+        });
+
+        // Difficulty buttons
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedDifficulty = btn.dataset.difficulty;
+                checkStartReady();
+            });
+        });
+
+        function checkStartReady() {
+            if (selectedOperation && selectedDifficulty) {
+                startBtn.classList.remove('hidden');
+            }
+        }
+
+        startBtn.addEventListener('click', startPractice);
+        restartBtn.addEventListener('click', resetApp);
+
+        function generateProblem(operation, difficulty) {
+            let num1, num2, answer;
+
+            const ranges = {
+                easy: { min: 1, max: 10 },
+                medium: { min: 1, max: 50 },
+                hard: { min: 1, max: 100 }
+            };
+
+            const range = ranges[difficulty];
+
+            switch(operation) {
+                case 'addition':
+                    num1 = Math.floor(Math.random() * range.max) + range.min;
+                    num2 = Math.floor(Math.random() * range.max) + range.min;
+                    answer = num1 + num2;
+                    return { num1, num2, operator: '+', answer };
+
+                case 'subtraction':
+                    num1 = Math.floor(Math.random() * range.max) + range.min;
+                    num2 = Math.floor(Math.random() * num1) + 1;
+                    answer = num1 - num2;
+                    return { num1, num2, operator: '−', answer };
+
+                case 'multiplication':
+                    const multRanges = {
+                        easy: { min: 1, max: 10 },
+                        medium: { min: 1, max: 12 },
+                        hard: { min: 1, max: 20 }
+                    };
+                    const multRange = multRanges[difficulty];
+                    num1 = Math.floor(Math.random() * multRange.max) + multRange.min;
+                    num2 = Math.floor(Math.random() * multRange.max) + multRange.min;
+                    answer = num1 * num2;
+                    return { num1, num2, operator: '×', answer };
+
+                case 'division':
+                    const divRanges = {
+                        easy: { min: 1, max: 10 },
+                        medium: { min: 1, max: 12 },
+                        hard: { min: 1, max: 15 }
+                    };
+                    const divRange = divRanges[difficulty];
+                    num2 = Math.floor(Math.random() * divRange.max) + divRange.min;
+                    answer = Math.floor(Math.random() * divRange.max) + divRange.min;
+                    num1 = num2 * answer;
+                    return { num1, num2, operator: '÷', answer };
+            }
+        }
+
+        function startPractice() {
+            currentProblem = 0;
+            correctAnswers = 0;
+            problems = [];
+
+            // Generate all problems
+            for (let i = 0; i < totalProblems; i++) {
+                problems.push(generateProblem(selectedOperation, selectedDifficulty));
+            }
+
+            startScreen.classList.remove('active');
+            practiceScreen.classList.add('active');
+
+            startTime = Date.now();
+            startTimer();
+            showProblem();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function showProblem() {
+            const problem = problems[currentProblem];
+            problemEl.textContent = `${problem.num1} ${problem.operator} ${problem.num2} =`;
+            answerInput.value = '';
+            answerInput.focus();
+            feedbackEl.textContent = '';
+            progressEl.textContent = `Problem ${currentProblem + 1} of ${totalProblems}`;
+        }
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value);
+            const problem = problems[currentProblem];
+
+            if (isNaN(userAnswer)) return;
+
+            if (userAnswer === problem.answer) {
+                feedbackEl.innerHTML = '<span class="checkmark">✓</span>';
+                correctAnswers++;
+            } else {
+                feedbackEl.innerHTML = '<span class="xmark">✗</span>';
+            }
+
+            setTimeout(() => {
+                currentProblem++;
+                if (currentProblem < totalProblems) {
+                    showProblem();
+                } else {
+                    showResults();
+                }
+            }, 800);
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+            practiceScreen.classList.remove('active');
+            resultsScreen.classList.add('active');
+
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+
+            const accuracy = Math.round((correctAnswers / totalProblems) * 100);
+
+            document.getElementById('scoreResult').textContent = `${correctAnswers}/${totalProblems}`;
+            document.getElementById('accuracyResult').textContent = `${accuracy}%`;
+            document.getElementById('timeResult').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function resetApp() {
+            resultsScreen.classList.remove('active');
+            startScreen.classList.add('active');
+
+            selectedOperation = null;
+            selectedDifficulty = null;
+
+            document.querySelectorAll('.operation-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+            startBtn.classList.add('hidden');
+
+            timerEl.textContent = '0:00';
+        }
+    </script>
+</body>
+</html>
