@@ -275,6 +275,7 @@
 
         .review-table .feedback-icon {
             font-size: 20px;
+            color: #22c55e;
         }
 
         .review-table .feedback-icon.incorrect {
@@ -326,7 +327,7 @@
 
         <!-- Results Screen -->
         <div id="resultsScreen" class="screen">
-            <h2>Practice Complete</h2>
+            <h2>Complete</h2>
 
             <div class="results">
                 <div class="result-item">
@@ -345,6 +346,8 @@
                 </div>
             </div>
 
+            <button id="restartBtn" style="margin-top: 40px; margin-bottom: 30px;">Practice Again</button>
+
             <div class="review-section">
                 <div class="review-title">Review Your Work</div>
                 <table class="review-table" id="reviewTable">
@@ -360,8 +363,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <button id="restartBtn" style="margin-top: 50px;">Practice Again</button>
         </div>
     </div>
 
@@ -700,6 +701,7 @@
                     correctCell.innerHTML = '<span class="feedback-icon">✓</span>';
                 } else {
                     correctCell.textContent = item.correctAnswer;
+                    correctCell.style.color = '#000000';
                 }
                 row.appendChild(correctCell);
 
