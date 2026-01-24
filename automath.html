@@ -206,7 +206,7 @@
 
         <!-- Practice Screen -->
         <div id="practiceScreen" class="screen">
-            <div class="progress" id="progress">Problem 1 of 10</div>
+            <div class="progress" id="progress">Problem 1 of 15</div>
 
             <div class="problem" id="problem"></div>
 
@@ -246,10 +246,10 @@
         // State
         let selectedOperation = null;
         let currentProblem = 0;
-        let totalProblems = 10;
+        let totalProblems = 15;
         let correctAnswers = 0;
         let startTime = null;
-        let currentDifficulty = 1; // Start at easiest level (1-5)
+        let currentDifficulty = 1; // Start at easiest level (1-4)
         let currentProblemData = null;
         let correctStreak = 0; // Track consecutive correct answers
 
@@ -290,14 +290,10 @@
                         // Facts within 20
                         num1 = Math.floor(Math.random() * 15) + 5;
                         num2 = Math.floor(Math.random() * 10) + 1;
-                    } else if (difficultyLevel === 4) {
-                        // Two-digit within 50
-                        num1 = Math.floor(Math.random() * 30) + 10;
-                        num2 = Math.floor(Math.random() * 20) + 5;
                     } else {
-                        // Two-digit within 100
-                        num1 = Math.floor(Math.random() * 50) + 20;
-                        num2 = Math.floor(Math.random() * 40) + 10;
+                        // Level 4: Two-digit within 75
+                        num1 = Math.floor(Math.random() * 40) + 10;
+                        num2 = Math.floor(Math.random() * 30) + 5;
                     }
                     answer = num1 + num2;
                     return { num1, num2, operator: '+', answer };
@@ -315,14 +311,10 @@
                         // Facts within 20
                         num1 = Math.floor(Math.random() * 15) + 6;
                         num2 = Math.floor(Math.random() * 10) + 1;
-                    } else if (difficultyLevel === 4) {
-                        // Two-digit within 50
-                        num1 = Math.floor(Math.random() * 30) + 15;
-                        num2 = Math.floor(Math.random() * 20) + 5;
                     } else {
-                        // Two-digit within 100
-                        num1 = Math.floor(Math.random() * 60) + 30;
-                        num2 = Math.floor(Math.random() * 40) + 10;
+                        // Level 4: Two-digit within 75
+                        num1 = Math.floor(Math.random() * 50) + 20;
+                        num2 = Math.floor(Math.random() * 30) + 5;
                     }
                     answer = num1 - num2;
                     return { num1, num2, operator: '−', answer };
@@ -340,14 +332,10 @@
                         // 0-10 times tables
                         num1 = Math.floor(Math.random() * 10) + 1;
                         num2 = Math.floor(Math.random() * 11);
-                    } else if (difficultyLevel === 4) {
-                        // 0-12 times tables
+                    } else {
+                        // Level 4: 0-12 times tables
                         num1 = Math.floor(Math.random() * 12) + 1;
                         num2 = Math.floor(Math.random() * 13);
-                    } else {
-                        // 0-15 times tables
-                        num1 = Math.floor(Math.random() * 15) + 1;
-                        num2 = Math.floor(Math.random() * 16);
                     }
                     answer = num1 * num2;
                     return { num1, num2, operator: '×', answer };
@@ -365,14 +353,10 @@
                         // 0-10 times tables division
                         num2 = Math.floor(Math.random() * 9) + 2;
                         answer = Math.floor(Math.random() * 12) + 1;
-                    } else if (difficultyLevel === 4) {
-                        // 0-12 times tables division
+                    } else {
+                        // Level 4: 0-12 times tables division
                         num2 = Math.floor(Math.random() * 11) + 2;
                         answer = Math.floor(Math.random() * 12) + 1;
-                    } else {
-                        // 0-15 times tables division
-                        num2 = Math.floor(Math.random() * 14) + 2;
-                        answer = Math.floor(Math.random() * 15) + 1;
                     }
                     num1 = num2 * answer;
                     return { num1, num2, operator: '÷', answer };
@@ -417,8 +401,8 @@
                 correctAnswers++;
                 correctStreak++;
 
-                // Increase difficulty only after 3 consecutive correct answers (max 5)
-                if (correctStreak >= 3 && currentDifficulty < 5) {
+                // Increase difficulty only after 3 consecutive correct answers (max 4)
+                if (correctStreak >= 3 && currentDifficulty < 4) {
                     currentDifficulty++;
                     correctStreak = 0; // Reset streak after difficulty increase
                 }
