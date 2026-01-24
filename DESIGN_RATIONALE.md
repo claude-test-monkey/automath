@@ -331,6 +331,152 @@ Automath implements the core principles in a simplified, single-session context 
 
 ---
 
+### Decision 8: Vertical Problem Layout
+
+**Date**: Later design iteration
+**Context**: Initial design displayed problems horizontally (7 × 8 = [box]), then switched to inline equation format.
+
+**Problem with Horizontal/Inline**:
+- Doesn't match how K-5 students actually write arithmetic
+- Elementary curriculum teaches stacking numbers vertically
+- Multi-digit addition/subtraction requires place value alignment
+- Unfamiliar format adds cognitive load
+
+**Alternative Considered**:
+1. **Horizontal layout** (7 + 8 = ___) - Compact but not pedagogically aligned
+2. **Inline layout** (7 + 8 = [box]) - Better but still horizontal
+3. **Vertical stacked layout** - **selected** - Matches school format
+
+**Decision**: Display problems in vertical stacked format:
+```
+   47
++  28
+────
+[box]
+```
+
+**Rationale**:
+- Matches pencil-and-paper format students use in school
+- Enables proper place value alignment (ones, tens, hundreds columns)
+- Reduces cognitive load (familiar format requires no translation)
+- Scales naturally to multi-digit problems
+- More authentic to actual arithmetic practice
+
+**Implementation**:
+- Numbers right-aligned (place value alignment)
+- Operator absolutely positioned on left (consistent location)
+- Answer box width matches problem width
+- Border-top on answer box simulates underline from written math
+
+**Outcome**: More authentic math practice experience that matches students' school learning.
+
+---
+
+### Decision 9: In-Box Feedback with Colored Borders
+
+**Date**: Later design iteration
+**Context**: Original design showed feedback (✓/✗) below the answer box.
+
+**Problem**:
+- Students' eyes had to move from input area to feedback area
+- Easy to miss feedback when focused on typing
+- Split attention between answer box and feedback element
+- Not focused enough for rapid practice flow
+
+**Alternatives Considered**:
+1. **Feedback below box** - Original design, splits attention
+2. **Feedback beside box** - Horizontal split attention
+3. **Feedback inside box** - **selected** - Keeps focus in one place
+
+**Decision**: Clear typed answer and show feedback (✓/✗) as placeholder inside answer box, with colored border and background.
+
+**Implementation**:
+- Correct: Green border-top, light green background, green ✓ placeholder
+- Incorrect: Red border-top, light red background, red ✗ placeholder
+- Cursor hidden during feedback (caret-color: transparent)
+- 400ms display before clearing for next problem
+
+**Rationale**:
+- Keeps attention in exact location where student is working
+- Impossible to miss feedback
+- Color + symbol = dual encoding (accessibility)
+- Simpler visual design (one element instead of two)
+
+**Outcome**: More focused practice experience, impossible to miss feedback.
+
+---
+
+### Decision 10: Problem Quality Controls
+
+**Date**: Later design iteration
+**Context**: Random problem generation was creating duplicate problems, consecutive trivial problems (×0, ×1), and same-number patterns.
+
+**Problem**:
+- Duplicate problems waste practice time (no new learning)
+- Commutative duplicates (7×2 and 2×7) feel repetitive to students
+- Multiple consecutive ×0 or ×1 problems are trivial (no challenge)
+- Seeing same number repeatedly (8+3, 8-2, 8×5) creates pattern recognition instead of fact recall
+
+**Alternatives Considered**:
+1. **Pure random** - Simple but creates quality issues
+2. **Pre-generate entire session** - Could optimize but adds complexity
+3. **Validate on generation with retry logic** - **selected** - Good balance
+
+**Decision**: Implement quality validation with retry logic (max 50 attempts per problem).
+
+**Rules Implemented**:
+1. No exact duplicate problems in a session
+2. No commutative duplicates (treat 7×2 and 2×7 as same for addition/multiplication)
+3. Maximum 1 trivial problem consecutively
+4. Maximum 3 trivial problems per session (~20%)
+5. No operand clustering (don't use same number in last 2 problems)
+
+**Rationale**:
+- Ensures every problem adds practice value
+- Prevents gaming or pattern recognition
+- Maintains randomness while enforcing quality
+- Low computational cost (typically finds valid problem in 1-3 attempts)
+
+**Outcome**: Higher quality practice sessions with no wasted problems.
+
+---
+
+### Decision 11: Review Table on Results Screen
+
+**Date**: Later design iteration
+**Context**: Results screen originally showed only summary stats (score, accuracy, time).
+
+**Problem**:
+- Students couldn't review which specific problems they got wrong
+- No way to learn from mistakes
+- Teachers/parents couldn't see what errors were made
+- Missed learning opportunity (testing effect)
+
+**Alternatives Considered**:
+1. **No review** - Simple but misses learning opportunity
+2. **Show only incorrect problems** - Focused but incomplete picture
+3. **Show all problems with answers and corrections** - **selected** - Complete review
+
+**Decision**: Add comprehensive review table showing all 15 problems, student answers, and correct answers when wrong.
+
+**Table Design**:
+- Three columns: Problem | Your Answer | Correct Answer
+- Correct rows: White background, green ✓ in Correct Answer column
+- Incorrect rows: Red background, red text, black correct answer
+- Problems displayed horizontally for compactness (7 + 3 =)
+- Positioned after summary stats and "Practice Again" button
+
+**Rationale**:
+- Enables learning from mistakes (retrieval practice + correction)
+- Quick visual scanning (red rows stand out)
+- Shows correct answers only when needed (reduces clutter)
+- Allows reflection after completion
+- Helps teachers/parents identify problem areas
+
+**Outcome**: Students can review their work and learn from errors without anxiety.
+
+---
+
 ## Constraints & Requirements
 
 ### Problem We're Solving
@@ -434,14 +580,38 @@ The constraint of a single HTML file forced:
 
 **Insight**: Modern web development often over-engineers. For small, focused tools, vanilla HTML/CSS/JS is often the right choice.
 
-### 7. Research-Informed ≠ Research-Validated
+### 7. Context Matters: Elementary vs. Abstract Math
+
+Initial design showed equations horizontally (7 + 8 = ___) like adult mathematics. But K-5 students learn arithmetic vertically:
+```
+   7
+ + 8
+───
+```
+
+**Insight**: Always design for the user's context, not abstract "correctness." Elementary students need elementary formats.
+
+### 8. Focus Beats Tradition
+
+Original feedback design followed convention (feedback appears in separate area below input). But placing feedback inside the answer box with colored borders is superior because it keeps attention focused.
+
+**Insight**: Question UI conventions when they split user attention. Sometimes the "wrong" design is actually better.
+
+### 9. Problem Quality Matters More Than Quantity
+
+Random problem generation is simple but creates duplicates, trivial problems, and patterns. Adding validation (no duplicates, limited trivial, reduced clustering) significantly improves practice quality.
+
+**Insight**: For learning tools, quality of each interaction > speed of implementation. The extra 50 lines of validation code are worth it.
+
+### 10. Research-Informed ≠ Research-Validated
 
 Automath is informed by learning science research, but hasn't been empirically validated. Design decisions are based on:
 - Published research on automaticity, mastery learning, etc.
 - Expert consensus (Math Academy's principles)
 - Common sense and user empathy
+- Iterative user feedback and testing
 
-**Next step**: Would benefit from user testing with real K-5 students and teachers.
+**Next step**: Would benefit from formal user testing with real K-5 students and teachers in classroom settings.
 
 ---
 

@@ -102,23 +102,38 @@
 
 **Reasoning**:
 - **Cognitive load**: Nothing to distract from math problems
-- **Accessibility**: High contrast, large text (72px for problems, 48px for input)
+- **Accessibility**: High contrast, large text (72px for problems and input)
 - **Anxiety reduction**: No countdown timers, pressure indicators, or flashy elements
 - **Speed**: No animations between problems (400ms feedback delay only)
 
-**Visual Hierarchy**:
-- Problem display: 72px (primary focus)
-- Answer input: 48px (secondary focus)
-- Feedback: 64px (✓ or ✗, brief display)
-- Progress/metadata: 14px (peripheral awareness)
+**Visual Hierarchy & Layout**:
+- **Vertical problem format**: Mimics pencil-and-paper arithmetic
+  ```
+     47
+  +  28
+  ─────
+  [box]
+  ```
+- Problem display: 72px, right-aligned for place value alignment
+- Answer input: 72px, right-aligned to match numbers above
+- Operator: Absolutely positioned on left, consistent across all problems
+- Feedback: In-box (✓/✗ as placeholder) with colored border and background
+- Progress counter: 14px, positioned below answer box
 
 ### Feedback Mechanism
 
-**Decision**: Simple visual feedback (✓/✗) with 400ms delay before next problem.
+**Decision**: In-box visual feedback with colored borders/backgrounds and 400ms delay before next problem.
+
+**Implementation**:
+- **Correct answers**: Green border-top, light green background, green ✓ appears in answer box
+- **Incorrect answers**: Red border-top, light red background, red ✗ appears in answer box
+- Answer is cleared and feedback appears as placeholder text (keeps focus in one place)
+- Cursor hidden during feedback (caret-color: transparent)
 
 **Reasoning**:
-- **Speed**: Fast enough to maintain flow state
-- **Clarity**: Immediate, unambiguous feedback
+- **Focused attention**: Feedback appears where student is already looking (in the answer box)
+- **Clarity**: Color + symbol provides redundant encoding (better accessibility)
+- **Speed**: 400ms is fast enough to maintain flow state
 - **Low pressure**: No sound by default, no penalty beyond difficulty adjustment
 - **Automaticity focus**: Quick feedback loop reinforces instant recall
 
@@ -166,8 +181,10 @@
 /home/user/automath/
 ├── automath.html          # Main application file
 ├── index.html             # GitHub Pages entry point (copy of automath.html)
+├── Claude.md              # Entry point - read this first each session
 ├── PROJECT_CONTEXT.md     # This file - technical documentation
 ├── DESIGN_RATIONALE.md    # Conceptual and decision documentation
+├── README.md              # GitHub repository readme
 └── .git/                  # Git repository
 ```
 
@@ -203,11 +220,59 @@ function generateProblem(operation, difficultyLevel) {
 - Multiplication: Commutative (either order acceptable for input)
 - Random distribution: Uniform within difficulty range
 
+### Problem Quality Controls
+
+To ensure high-quality practice sessions, the app implements validation to prevent:
+
+**1. Duplicate Problems**
+- Exact duplicates: Same problem won't appear twice (7 × 2)
+- Commutative duplicates: For addition/multiplication, (7 × 2) and (2 × 7) treated as same problem
+- Implementation: Normalized problem tracking in `sessionProblems[]` array
+
+**2. Trivial Problem Limitations**
+- Maximum 1 trivial problem consecutively (no back-to-back ×0, ×1, +0, etc.)
+- Maximum 3 trivial problems per session (~20% of 15 problems)
+- Trivial problems defined as: ×0, ×1, ÷1, +0, -0
+
+**3. Operand Clustering Reduction**
+- Tracks last 4 operands used (last 2 problems)
+- Prevents patterns like: 8+3, 8-2, 8×5 appearing consecutively
+- Reduces pattern recognition, forces actual fact recall
+
+**4. Retry Logic**
+- Attempts up to 50 times to generate valid problem meeting all criteria
+- Accepts problem if max attempts reached (prevents infinite loops)
+- In practice, valid problems found within 1-3 attempts
+
+### Review Table
+
+**Decision**: Display comprehensive review of all problems after session completion.
+
+**Features**:
+- Shows all 15 problems in order
+- Displays student's answer for each problem
+- Shows correct answer only when student got it wrong
+- Visual feedback: Green ✓ for correct, red row highlighting for incorrect
+- Positioned after summary stats and "Practice Again" button
+
+**Table Structure**:
+| Problem | Your Answer | Correct Answer |
+|---------|-------------|----------------|
+| 7 + 3 = | 10          | ✓              |
+| 8 - 5 = | 2           | 3              |
+
+**Visual Design**:
+- Correct rows: White background, green ✓ in Correct Answer column
+- Incorrect rows: Light red background (#ffebee), red text, black number in Correct Answer column
+- Allows quick scanning for errors (red rows stand out)
+- Enables learning from mistakes (shows what the correct answer was)
+
 ### State Management
 
 Simple global state (no framework needed):
 
 ```javascript
+// Core session state
 let selectedOperation = null;      // 'addition', 'subtraction', etc.
 let currentProblem = 0;            // 0-14 (current problem index)
 let totalProblems = 15;            // Session length
@@ -216,6 +281,13 @@ let currentDifficulty = 1;         // 1-4 (adaptive difficulty level)
 let correctStreak = 0;             // 0-2+ (for difficulty progression)
 let currentProblemData = null;     // { num1, num2, operator, answer }
 let startTime = null;              // timestamp (for elapsed time)
+
+// Problem quality tracking
+let sessionProblems = [];          // Normalized problems (prevents duplicates)
+let consecutiveTrivialCount = 0;   // Consecutive trivial problems (×0, ×1, etc.)
+let totalTrivialCount = 0;         // Total trivial problems in session (max 3)
+let recentOperands = [];           // Last 4 operands (prevents clustering)
+let sessionHistory = [];           // All problems/answers for review table
 ```
 
 ### Screen Transitions
@@ -243,9 +315,12 @@ Managed via CSS classes (no routing library):
 - ✅ Four operation types (addition, subtraction, multiplication, division)
 - ✅ Adaptive difficulty (4 levels, streak-based progression)
 - ✅ 15-problem practice sessions
-- ✅ Immediate visual feedback (✓/✗)
-- ✅ Results screen (score, accuracy, total time)
-- ✅ Clean, minimal UI
+- ✅ Vertical problem layout (mimics pencil-and-paper format)
+- ✅ In-box feedback with colored borders/backgrounds (✓/✗)
+- ✅ Results screen with summary stats (score, accuracy, total time)
+- ✅ Review table showing all problems, student answers, and corrections
+- ✅ Problem quality controls (no duplicates, limited trivial problems, reduced clustering)
+- ✅ Clean, minimal UI with focused attention design
 - ✅ Responsive design (works on iPad and desktop)
 - ✅ Direct-to-practice flow (no intermediate screens)
 - ✅ GitHub Pages deployment
@@ -363,24 +438,39 @@ Managed via CSS classes (no routing library):
 
 ### Testing Checklist
 - [ ] All four operations generate valid problems
+- [ ] Problems display in vertical format with proper alignment
+- [ ] No duplicate problems in a session (including commutative duplicates)
+- [ ] Trivial problems limited (max 1 consecutive, max 3 total)
+- [ ] No excessive operand clustering (same number in 3+ consecutive problems)
 - [ ] Difficulty progression works correctly (3 correct → level up)
 - [ ] Difficulty regression works (1 wrong → level down)
+- [ ] In-box feedback displays correctly (green ✓ or red ✗ with colored borders)
+- [ ] Cursor disappears during feedback display
 - [ ] Results screen calculates accuracy correctly
-- [ ] Timer displays correctly (MM:SS format)
+- [ ] Review table shows all 15 problems with correct/incorrect marking
+- [ ] Review table shows correct answers only for incorrect problems
+- [ ] Time displays correctly (MM:SS format)
 - [ ] "Practice Again" button resets to start screen
 - [ ] Input field auto-focuses after each problem
 - [ ] Enter key submits answers
-- [ ] Visual feedback (✓/✗) displays for 400ms
+- [ ] Horizontal results layout (Score, Accuracy, Time) wraps on mobile
 
 ---
 
 ## Maintenance Notes
 
 ### Code Organization
-- HTML structure: Lines 1-215
-- CSS styles: Lines 7-185
-- JavaScript: Lines 256-447
+- HTML structure: Lines 1-270
+- CSS styles: Lines 7-290
+- JavaScript: Lines 272-630
 - Clear separation of concerns within single file
+
+**Key Functions**:
+- `generateProblem()`: Creates random problem at specified difficulty
+- `showNextProblem()`: Displays problem with quality validation
+- `checkAnswer()`: Evaluates answer, updates difficulty, saves to history
+- `showResults()`: Displays summary stats and populates review table
+- Helper functions: `isTrivial()`, `isDuplicate()`, `normalizeProblem()`, `hasRecentOperand()`
 
 ### Modifying Difficulty Levels
 To adjust difficulty ranges, edit the `generateProblem()` function (lines 287-375):

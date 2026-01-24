@@ -81,6 +81,7 @@ Before implementing any change, ask:
 ├── automath.html              # Main application (edit this)
 ├── index.html                 # GitHub Pages entry (copy of automath.html)
 ├── Claude.md                  # This file - start here every session
+├── README.md                  # GitHub repository readme
 ├── PROJECT_CONTEXT.md         # Technical documentation - READ THIS
 ├── DESIGN_RATIONALE.md        # Design philosophy - READ THIS
 └── .git/
@@ -129,9 +130,18 @@ Edit streak requirement in `checkAnswer()` function (line ~416)
 
 **UX Flow:**
 1. Click operation → immediate practice start
-2. 15 problems with adaptive difficulty
-3. View results (score, accuracy, time)
+2. 15 problems with adaptive difficulty (vertical layout)
+3. View results: summary stats + review table with all problems/answers
 4. "Practice Again" returns to operation selection
+
+**Problem Format:**
+```
+   47
++  28
+────
+[box]  ← In-box feedback (✓/✗) with colored border/background
+Problem 5 of 15
+```
 
 ## Research Foundation
 
