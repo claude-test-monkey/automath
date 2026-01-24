@@ -117,11 +117,12 @@
         input[type="number"] {
             font-size: 48px;
             padding: 20px;
-            border: 2px solid #000000;
+            border: 3px solid #000000;
             border-radius: 4px;
             width: 300px;
             text-align: center;
             font-family: inherit;
+            transition: border-color 0.2s;
         }
 
         input[type="number"]:focus {
@@ -129,33 +130,33 @@
             border-color: #000000;
         }
 
-        .feedback {
-            font-size: 64px;
-            margin: 20px 0;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .checkmark {
+        input[type="number"].correct {
+            border-color: #22c55e;
             color: #22c55e;
         }
 
-        .xmark {
+        input[type="number"].incorrect {
+            border-color: #ef4444;
             color: #ef4444;
         }
 
-        .timer {
-            font-size: 18px;
-            color: #666;
-            margin-bottom: 30px;
+        input[type="number"]::placeholder {
+            font-size: 64px;
+            color: #cccccc;
+        }
+
+        input[type="number"].correct::placeholder {
+            color: #22c55e;
+        }
+
+        input[type="number"].incorrect::placeholder {
+            color: #ef4444;
         }
 
         .progress {
             font-size: 14px;
             color: #666;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
 
         .results {
@@ -206,15 +207,13 @@
 
         <!-- Practice Screen -->
         <div id="practiceScreen" class="screen">
-            <div class="progress" id="progress">Problem 1 of 15</div>
-
             <div class="problem" id="problem"></div>
 
             <div class="input-container">
                 <input type="number" id="answer" placeholder="?" autocomplete="off">
             </div>
 
-            <div class="feedback" id="feedback"></div>
+            <div class="progress" id="progress">Problem 1 of 15</div>
         </div>
 
         <!-- Results Screen -->
@@ -266,7 +265,6 @@
         const restartBtn = document.getElementById('restartBtn');
         const problemEl = document.getElementById('problem');
         const answerInput = document.getElementById('answer');
-        const feedbackEl = document.getElementById('feedback');
         const progressEl = document.getElementById('progress');
 
         // Operation buttons - start practice immediately when clicked
@@ -468,8 +466,9 @@
             currentProblemData = problem;
             problemEl.textContent = `${currentProblemData.num1} ${currentProblemData.operator} ${currentProblemData.num2} =`;
             answerInput.value = '';
+            answerInput.placeholder = '?';
+            answerInput.classList.remove('correct', 'incorrect');
             answerInput.focus();
-            feedbackEl.textContent = '';
             progressEl.textContent = `Problem ${currentProblem + 1} of ${totalProblems}`;
         }
 
@@ -485,7 +484,10 @@
             if (isNaN(userAnswer)) return;
 
             if (userAnswer === currentProblemData.answer) {
-                feedbackEl.innerHTML = '<span class="checkmark">✓</span>';
+                // Show green checkmark in input box
+                answerInput.value = '';
+                answerInput.placeholder = '✓';
+                answerInput.classList.add('correct');
                 correctAnswers++;
                 correctStreak++;
 
@@ -495,7 +497,10 @@
                     correctStreak = 0; // Reset streak after difficulty increase
                 }
             } else {
-                feedbackEl.innerHTML = '<span class="xmark">✗</span>';
+                // Show red X in input box
+                answerInput.value = '';
+                answerInput.placeholder = '✗';
+                answerInput.classList.add('incorrect');
                 correctStreak = 0; // Reset streak on wrong answer
 
                 // Decrease difficulty immediately on wrong answer (min 1)
