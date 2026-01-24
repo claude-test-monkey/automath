@@ -253,6 +253,12 @@
         let currentProblemData = null;
         let correctStreak = 0; // Track consecutive correct answers
 
+        // Problem tracking to prevent duplicates and manage trivial problems
+        let sessionProblems = []; // All problems shown this session
+        let consecutiveTrivialCount = 0; // Consecutive trivial problems
+        let totalTrivialCount = 0; // Total trivial problems in session
+        let recentOperands = []; // Track last 2 operands used
+
         // Elements
         const startScreen = document.getElementById('startScreen');
         const practiceScreen = document.getElementById('practiceScreen');
@@ -272,6 +278,37 @@
         });
 
         restartBtn.addEventListener('click', resetApp);
+
+        // Helper function: Check if problem is trivial
+        function isTrivial(num1, num2, operation) {
+            if (operation === 'multiplication') return num2 === 0 || num2 === 1;
+            if (operation === 'division') return num2 === 1;
+            if (operation === 'addition') return num2 === 0;
+            if (operation === 'subtraction') return num2 === 0;
+            return false;
+        }
+
+        // Helper function: Normalize problem for duplicate checking
+        // For commutative operations (addition, multiplication), order doesn't matter
+        function normalizeProblem(num1, num2, operator) {
+            if (operator === '+' || operator === '×') {
+                // Commutative: treat (7,2) and (2,7) as same
+                return `${Math.min(num1, num2)},${Math.max(num1, num2)},${operator}`;
+            }
+            // Non-commutative: (7,2) and (2,7) are different
+            return `${num1},${num2},${operator}`;
+        }
+
+        // Helper function: Check if problem is duplicate
+        function isDuplicate(num1, num2, operator) {
+            const normalized = normalizeProblem(num1, num2, operator);
+            return sessionProblems.includes(normalized);
+        }
+
+        // Helper function: Check if operand was used in last 2 problems
+        function hasRecentOperand(num1, num2) {
+            return recentOperands.includes(num1) || recentOperands.includes(num2);
+        }
 
         function generateProblem(operation, difficultyLevel) {
             let num1, num2, answer;
@@ -369,6 +406,12 @@
             currentDifficulty = 1; // Start at easiest level
             correctStreak = 0;
 
+            // Reset problem tracking
+            sessionProblems = [];
+            consecutiveTrivialCount = 0;
+            totalTrivialCount = 0;
+            recentOperands = [];
+
             startScreen.classList.remove('active');
             practiceScreen.classList.add('active');
 
@@ -377,7 +420,52 @@
         }
 
         function showNextProblem() {
-            currentProblemData = generateProblem(selectedOperation, currentDifficulty);
+            let problem = null;
+            let attempts = 0;
+            const maxAttempts = 50;
+
+            // Retry logic to generate valid problem
+            while (attempts < maxAttempts) {
+                problem = generateProblem(selectedOperation, currentDifficulty);
+                const { num1, num2, operator } = problem;
+
+                // Check if problem is trivial
+                const trivial = isTrivial(num1, num2, selectedOperation);
+
+                // Validation checks
+                const duplicate = isDuplicate(num1, num2, operator);
+                const tooManyConsecutiveTrivial = trivial && consecutiveTrivialCount >= 1;
+                const tooManyTotalTrivial = trivial && totalTrivialCount >= 3;
+                const sameOperandClustering = hasRecentOperand(num1, num2);
+
+                // Accept if all checks pass
+                if (!duplicate && !tooManyConsecutiveTrivial && !tooManyTotalTrivial && !sameOperandClustering) {
+                    // Track this problem
+                    const normalized = normalizeProblem(num1, num2, operator);
+                    sessionProblems.push(normalized);
+
+                    // Update trivial tracking
+                    if (trivial) {
+                        consecutiveTrivialCount++;
+                        totalTrivialCount++;
+                    } else {
+                        consecutiveTrivialCount = 0;
+                    }
+
+                    // Update recent operands (keep last 2)
+                    recentOperands.push(num1, num2);
+                    if (recentOperands.length > 4) {
+                        recentOperands = recentOperands.slice(-4);
+                    }
+
+                    break;
+                }
+
+                attempts++;
+            }
+
+            // Use the generated problem (or last attempt if max retries reached)
+            currentProblemData = problem;
             problemEl.textContent = `${currentProblemData.num1} ${currentProblemData.operator} ${currentProblemData.num2} =`;
             answerInput.value = '';
             answerInput.focus();
@@ -448,6 +536,12 @@
             selectedOperation = null;
             currentDifficulty = 1;
             correctStreak = 0;
+
+            // Clear problem tracking
+            sessionProblems = [];
+            consecutiveTrivialCount = 0;
+            totalTrivialCount = 0;
+            recentOperands = [];
         }
     </script>
 </body>
